@@ -3,7 +3,8 @@ from .ingestion.validator import validate_records
 from .ingestion.observation_builder import build_observations
 from .ingestion.entity_builder import attach_entities_to_observation
 from .correlation.correlator import correlate_observations
-
+from intelligence.ml.profile import compare_actor_profiles
+from intelligence.ml.evidence import build_ml_evidence
 from .evidence.evidence_builder import build_evidence
 
 from .attribution.hypotheses import Hypothesis
@@ -293,8 +294,68 @@ def investigate_dataset(
     evidence.extend(
         infrastructure_evidence
     )
+        # ==========================================
+    # 10. ML PROFILE EVIDENCE
     # ==========================================
-    # 9. BUILD HYPOTHESES
+
+    ml_evidence = []
+
+    for relationship in relationships:
+
+        entity_a_id = relationship.source_entity_id
+        entity_b_id = relationship.target_entity_id
+
+        observations_a = [
+            observation
+            for observation in observations
+            if entity_a_id in observation.entity_ids
+        ]
+
+        observations_b = [
+            observation
+            for observation in observations
+            if entity_b_id in observation.entity_ids
+        ]
+
+        if not observations_a or not observations_b:
+            continue
+
+        profile_a_observations = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_a
+        ]
+
+        profile_b_observations = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_b
+        ]
+
+        comparison = compare_actor_profiles(
+            profile_a_observations,
+            profile_b_observations
+        )
+
+        items = build_ml_evidence(
+            entity_a_id,
+            entity_b_id,
+            comparison
+        )
+
+        ml_evidence.extend(items)
+
+    evidence.extend(
+        ml_evidence
+    )
+    # ==========================================
+    # 11. BUILD HYPOTHESES
     # ==========================================
 
     hypotheses = []
@@ -361,12 +422,29 @@ def investigate_dataset(
             )
         )
 
-        # ======================================
+         # ======================================
         # Calculate confidence
         # ======================================
+        #
+        # ML_STYLOMETRY and ML_BEHAVIOR are
+        # explanatory components of ML_PROFILE.
+        # Only ML_PROFILE contributes to the
+        # attribution confidence to avoid
+        # double-counting the same ML signal.
+        # ======================================
+
+        confidence_evidence = [
+            item
+            for item in supporting_evidence
+            if item.evidence_type.upper()
+            not in {
+                "ML_STYLOMETRY",
+                "ML_BEHAVIOR"
+            }
+        ]
 
         confidence = calculate_confidence(
-            supporting_evidence,
+            confidence_evidence,
             contradicting_evidence
         )
 
@@ -405,7 +483,7 @@ def investigate_dataset(
         )
 
     # ==========================================
-    # 10. RETURN COMPLETE INVESTIGATION
+    # 12. RETURN COMPLETE INVESTIGATION
     # ==========================================
 
     return {

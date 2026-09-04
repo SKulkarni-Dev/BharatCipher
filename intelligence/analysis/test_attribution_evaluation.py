@@ -18,10 +18,7 @@ from intelligence.attribution.scorer import (
     assess_confidence
 )
 
-
-DATASET_PATH = (
-    "ingestion/attribution_evaluation.json"
-)
+DATASET_PATH = "intelligence/ingestion/attribution_evaluation.json"
 
 
 def run_evaluation():
