@@ -1,5 +1,3 @@
-import json
-
 from intelligence.ingestion.loader import load_json
 from intelligence.ingestion.validator import validate_records
 from intelligence.ingestion.observation_builder import build_observations
@@ -12,13 +10,18 @@ from intelligence.evidence.evidence_builder import build_evidence
 from intelligence.analysis.temporal import compare_observation_times
 from intelligence.analysis.temporal_evidence import build_temporal_evidence
 
-from intelligence.attribution.hypotheses import Hypothesis
+from intelligence.ml.profile import compare_actor_profiles
+from intelligence.ml.evidence import build_ml_evidence
+
 from intelligence.attribution.scorer import (
     calculate_confidence,
     assess_confidence
 )
 
-DATASET_PATH = "intelligence/ingestion/attribution_evaluation.json"
+
+DATASET_PATH = (
+    "intelligence/ingestion/attribution_evaluation.json"
+)
 
 
 def run_evaluation():
@@ -56,7 +59,9 @@ def run_evaluation():
             observation
         )
 
-        all_entities.extend(entities)
+        all_entities.extend(
+            entities
+        )
 
     unique_entities = {}
 
@@ -93,7 +98,9 @@ def run_evaluation():
             entities
         )
 
-        evidence.append(item)
+        evidence.append(
+            item
+        )
 
     # ==========================================
     # TEMPORAL EVIDENCE
@@ -144,6 +151,74 @@ def run_evaluation():
             evidence.append(
                 temporal_item
             )
+
+    # ==========================================
+    # ML EVIDENCE
+    # ==========================================
+
+    ml_evidence = []
+
+    for relationship in relationships:
+
+        entity_a_id = (
+            relationship.source_entity_id
+        )
+
+        entity_b_id = (
+            relationship.target_entity_id
+        )
+
+        observations_a = [
+            observation
+            for observation in observations
+            if entity_a_id in observation.entity_ids
+        ]
+
+        observations_b = [
+            observation
+            for observation in observations
+            if entity_b_id in observation.entity_ids
+        ]
+
+        if not observations_a or not observations_b:
+            continue
+
+        profile_a = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_a
+        ]
+
+        profile_b = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_b
+        ]
+
+        comparison = compare_actor_profiles(
+            profile_a,
+            profile_b
+        )
+
+        items = build_ml_evidence(
+            entity_a_id,
+            entity_b_id,
+            comparison
+        )
+
+        ml_evidence.extend(
+            items
+        )
+
+    evidence.extend(
+        ml_evidence
+    )
 
     # ==========================================
     # EVALUATE EACH RELATIONSHIP
@@ -221,14 +296,33 @@ def run_evaluation():
             )
         ]
 
+        # ======================================
+        # SUPPORTING EVIDENCE
+        # ======================================
+
+        # ML_STYLOMETRY and ML_BEHAVIOR are
+        # components of ML_PROFILE.
+        #
+        # They remain visible in the evidence
+        # output but are excluded from confidence
+        # calculation to avoid double-counting.
+        #
+        # ML_PROFILE is the combined ML signal.
+
         supporting = [
             item
             for item in related_evidence
             if item.evidence_type
             not in {
-                "TEMPORAL_CONFLICT"
+                "TEMPORAL_CONFLICT",
+                "ML_STYLOMETRY",
+                "ML_BEHAVIOR"
             }
         ]
+
+        # ======================================
+        # CONTRADICTING EVIDENCE
+        # ======================================
 
         contradicting = [
             item
@@ -239,6 +333,10 @@ def run_evaluation():
             }
         ]
 
+        # ======================================
+        # CONFIDENCE
+        # ======================================
+
         confidence = calculate_confidence(
             supporting,
             contradicting
@@ -247,6 +345,10 @@ def run_evaluation():
         assessment = assess_confidence(
             confidence
         )
+
+        # ======================================
+        # OUTPUT
+        # ======================================
 
         print(
             f"CASE {index}"
