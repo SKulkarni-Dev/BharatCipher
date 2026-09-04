@@ -13,6 +13,10 @@ from intelligence.analysis.temporal import compare_observation_times
 from intelligence.analysis.temporal_evidence import build_temporal_evidence
 
 from intelligence.attribution.hypotheses import Hypothesis
+
+from intelligence.ml.profile import compare_actor_profiles
+from intelligence.ml.evidence import build_ml_evidence
+
 from intelligence.attribution.scorer import (
     calculate_confidence,
     assess_confidence
@@ -20,7 +24,7 @@ from intelligence.attribution.scorer import (
 
 
 DATASET_PATH = (
-    "ingestion/attribution_evaluation.json"
+    "intelligence/ingestion/attribution_evaluation.json"
 )
 
 
@@ -149,6 +153,73 @@ def run_evaluation():
             )
 
     # ==========================================
+    # ML EVIDENCE
+    # ==========================================
+
+    ml_evidence = []
+
+    for relationship in relationships:
+
+        entity_a_id = (
+            relationship.source_entity_id
+        )
+
+        entity_b_id = (
+            relationship.target_entity_id
+        )
+
+        observations_a = [
+            observation
+            for observation in observations
+            if entity_a_id in observation.entity_ids
+        ]
+
+        observations_b = [
+            observation
+            for observation in observations
+            if entity_b_id in observation.entity_ids
+        ]
+
+        if not observations_a or not observations_b:
+            continue
+
+        profile_a = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_a
+        ]
+
+        profile_b = [
+            {
+                "source": observation.source,
+                "observed_at": observation.observed_at,
+                "content": observation.content
+            }
+            for observation in observations_b
+        ]
+
+        comparison = compare_actor_profiles(
+            profile_a,
+            profile_b
+        )
+
+        items = build_ml_evidence(
+            entity_a_id,
+            entity_b_id,
+            comparison
+        )
+
+        ml_evidence.extend(items)
+
+    evidence.extend(
+        ml_evidence
+    )
+
+    #
+ ==========================================
     # EVALUATE EACH RELATIONSHIP
     # ==========================================
 
@@ -224,15 +295,16 @@ def run_evaluation():
             )
         ]
 
-        supporting = [
+                supporting = [
             item
             for item in related_evidence
             if item.evidence_type
             not in {
-                "TEMPORAL_CONFLICT"
+                "TEMPORAL_CONFLICT",
+                "ML_STYLOMETRY",
+                "ML_BEHAVIOR"
             }
         ]
-
         contradicting = [
             item
             for item in related_evidence
