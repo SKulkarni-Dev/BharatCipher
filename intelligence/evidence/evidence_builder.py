@@ -10,11 +10,10 @@ def build_evidence(
     entities
 ):
     """
-    Create an Evidence object from a discovered
-    relationship.
+    Create an Evidence object from a discovered relationship.
 
-    The evidence keeps the complete provenance:
-    relationship → observations → sources.
+    The evidence preserves provenance from:
+        relationship → observations → sources
     """
 
     entity_map = {
@@ -61,7 +60,6 @@ def build_evidence(
         )
 
         if observation:
-
             reliability_values.append(
                 observation.source_reliability
             )
@@ -102,6 +100,33 @@ def build_evidence(
         source_observation_ids,
         relationship_type
     )
+
+    # ------------------------------------------
+    # Collect provenance
+    # ------------------------------------------
+
+    provenance = []
+
+    for observation_id in source_observation_ids:
+
+        observation = observation_map.get(
+            observation_id
+        )
+
+        if not observation:
+            continue
+
+        provenance.append({
+            "observation_id": observation.observation_id,
+            "source": observation.source,
+            "source_type": observation.source_type,
+            "collection_method": observation.collection_method,
+            "collection_time": observation.collection_time,
+            "source_reference": observation.source_reference,
+            "original_timestamp": observation.original_timestamp,
+            "content_hash": observation.content_hash,
+            "integrity_status": observation.integrity_status
+        })
 
     # ------------------------------------------
     # Create Evidence
@@ -155,7 +180,9 @@ def build_evidence(
                     "sources",
                     []
                 )
-            )
+            ),
+
+            "provenance": provenance
         }
     )
 

@@ -2,53 +2,113 @@
   {
     "source": "dataset_A",
     "observed_at": "2026-08-28T10:00:00Z",
-    "content": "User alphaOne was associated with PGP-X."
+    "content": "User alphaOne was associated with PGP-X.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_A",
     "observed_at": "2026-08-29T10:00:00Z",
-    "content": "User alphaOne was observed using PGP-X."
+    "content": "User alphaOne was observed using PGP-X.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_B",
     "observed_at": "2026-08-28T14:00:00Z",
-    "content": "betaTwo was associated with PGP-X."
+    "content": "betaTwo was associated with PGP-X.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_B",
     "observed_at": "2026-08-29T14:00:00Z",
-    "content": "betaTwo was observed using PGP-X."
+    "content": "betaTwo was observed using PGP-X.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
-
   {
     "source": "dataset_C",
     "observed_at": "2026-08-01T10:00:00Z",
-    "content": "gammaThree was associated with PGP-Y."
+    "content": "gammaThree was associated with PGP-Y.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_C",
     "observed_at": "2026-08-02T10:00:00Z",
-    "content": "gammaThree was observed using PGP-Y."
+    "content": "gammaThree was observed using PGP-Y.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_D",
     "observed_at": "2026-08-20T10:00:00Z",
-    "content": "deltaFour was associated with PGP-Y."
+    "content": "deltaFour was associated with PGP-Y.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_D",
     "observed_at": "2026-08-21T10:00:00Z",
-    "content": "deltaFour was observed using PGP-Y."
+    "content": "deltaFour was observed using PGP-Y.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
-
   {
     "source": "dataset_E",
-    "observed_at": "2026-08-10T10:00:00Z",
-    "content": "epsilonFive was associated with PGP-Z."
+    "observed_at": "2026-08-10T02:15:00Z",
+    "content": "User epsilonFive wrote WOW!!! HUGE DEAL!!! BUY NOW!!!",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
+  },
+  {
+    "source": "dataset_E",
+    "observed_at": "2026-08-11T03:30:00Z",
+    "content": "User epsilonFive wrote AMAZING OFFER!!! LIMITED TIME!!!",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
+  },
+  {
+    "source": "dataset_E",
+    "observed_at": "2026-08-12T04:45:00Z",
+    "content": "User epsilonFive wrote CLICK NOW!!! MASSIVE PROFIT!!!",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   },
   {
     "source": "dataset_F",
-    "observed_at": "2026-08-11T10:00:00Z",
-    "content": "zetaSix was associated with PGP-W."
+    "observed_at": "2026-08-20T16:00:00Z",
+    "content": "User zetaSix submitted the documentation for review and verification.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
+  },
+  {
+    "source": "dataset_F",
+    "observed_at": "2026-08-21T18:30:00Z",
+    "content": "User zetaSix requested that the submitted information be carefully reviewed.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
+  },
+  {
+    "source": "dataset_F",
+    "observed_at": "2026-08-22T20:15:00Z",
+    "content": "User zetaSix confirmed that the requested information was available for inspection.",
+    "source_type": "synthetic",
+    "collection_method": "controlled_test",
+    "integrity_status": "SYNTHETIC"
   }
 ]

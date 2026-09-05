@@ -34,7 +34,6 @@ hypothesis = Hypothesis(
 supporting_evidence = [
 
     Evidence(
-
         evidence_id="EVID-PGP",
 
         evidence_type="SHARES_PGP",
@@ -59,7 +58,6 @@ supporting_evidence = [
     ),
 
     Evidence(
-
         evidence_id="EVID-TEMPORAL",
 
         evidence_type="TEMPORAL_OVERLAP",
@@ -92,7 +90,6 @@ supporting_evidence = [
 contradicting_evidence = [
 
     Evidence(
-
         evidence_id="EVID-INFRA-CONFLICT",
 
         evidence_type="DIFFERENT_INFRASTRUCTURE",
@@ -152,6 +149,16 @@ assessment_with_contradiction = assess_confidence(
 
 
 # ==========================================
+# VALIDATION
+# ==========================================
+
+confidence_reduced = (
+    confidence_with_contradiction
+    < confidence_without_contradiction
+)
+
+
+# ==========================================
 # DISPLAY
 # ==========================================
 
@@ -200,3 +207,27 @@ print(
     f" -> "
     f"{confidence_with_contradiction}"
 )
+
+print()
+
+if confidence_reduced:
+
+    print(
+        "PASS - Contradicting evidence "
+        "reduced attribution confidence."
+    )
+
+else:
+
+    print(
+        "FAIL - Contradicting evidence "
+        "did not reduce attribution confidence."
+    )
+
+    raise AssertionError(
+        "Contradiction should reduce confidence."
+    )
+
+print()
+
+print("CONTRADICTION TEST COMPLETE")

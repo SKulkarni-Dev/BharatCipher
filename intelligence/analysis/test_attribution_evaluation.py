@@ -24,6 +24,30 @@ DATASET_PATH = (
 )
 
 
+def get_actor_observations(
+    observations,
+    entity_id
+):
+    return [
+        observation
+        for observation in observations
+        if entity_id in observation.entity_ids
+    ]
+
+
+def convert_to_ml_profile(
+    observations
+):
+    return [
+        {
+            "source": observation.source,
+            "observed_at": observation.observed_at,
+            "content": observation.content
+        }
+        for observation in observations
+    ]
+
+
 def run_evaluation():
 
     # ==========================================
@@ -116,17 +140,15 @@ def run_evaluation():
             relationship.target_entity_id
         )
 
-        observations_a = [
-            observation
-            for observation in observations
-            if entity_a_id in observation.entity_ids
-        ]
+        observations_a = get_actor_observations(
+            observations,
+            entity_a_id
+        )
 
-        observations_b = [
-            observation
-            for observation in observations
-            if entity_b_id in observation.entity_ids
-        ]
+        observations_b = get_actor_observations(
+            observations,
+            entity_b_id
+        )
 
         if not observations_a or not observations_b:
             continue
@@ -168,38 +190,26 @@ def run_evaluation():
             relationship.target_entity_id
         )
 
-        observations_a = [
-            observation
-            for observation in observations
-            if entity_a_id in observation.entity_ids
-        ]
+        observations_a = get_actor_observations(
+            observations,
+            entity_a_id
+        )
 
-        observations_b = [
-            observation
-            for observation in observations
-            if entity_b_id in observation.entity_ids
-        ]
+        observations_b = get_actor_observations(
+            observations,
+            entity_b_id
+        )
 
         if not observations_a or not observations_b:
             continue
 
-        profile_a = [
-            {
-                "source": observation.source,
-                "observed_at": observation.observed_at,
-                "content": observation.content
-            }
-            for observation in observations_a
-        ]
+        profile_a = convert_to_ml_profile(
+            observations_a
+        )
 
-        profile_b = [
-            {
-                "source": observation.source,
-                "observed_at": observation.observed_at,
-                "content": observation.content
-            }
-            for observation in observations_b
-        ]
+        profile_b = convert_to_ml_profile(
+            observations_b
+        )
 
         comparison = compare_actor_profiles(
             profile_a,
@@ -221,7 +231,7 @@ def run_evaluation():
     )
 
     # ==========================================
-    # EVALUATE EACH RELATIONSHIP
+    # HEADER
     # ==========================================
 
     print()
@@ -244,14 +254,6 @@ def run_evaluation():
 
     print()
 
-    if not relationships:
-
-        print(
-            "No relationships found."
-        )
-
-        return
-
     # ==========================================
     # ENTITY MAP
     # ==========================================
@@ -262,7 +264,7 @@ def run_evaluation():
     }
 
     # ==========================================
-    # RELATIONSHIP RESULTS
+    # CORRELATED RELATIONSHIPS
     # ==========================================
 
     for index, relationship in enumerate(
@@ -279,11 +281,8 @@ def run_evaluation():
         ]
 
         related_evidence = [
-
             item
-
             for item in evidence
-
             if (
                 set(
                     [
@@ -296,19 +295,6 @@ def run_evaluation():
             )
         ]
 
-        # ======================================
-        # SUPPORTING EVIDENCE
-        # ======================================
-
-        # ML_STYLOMETRY and ML_BEHAVIOR are
-        # components of ML_PROFILE.
-        #
-        # They remain visible in the evidence
-        # output but are excluded from confidence
-        # calculation to avoid double-counting.
-        #
-        # ML_PROFILE is the combined ML signal.
-
         supporting = [
             item
             for item in related_evidence
@@ -320,10 +306,6 @@ def run_evaluation():
             }
         ]
 
-        # ======================================
-        # CONTRADICTING EVIDENCE
-        # ======================================
-
         contradicting = [
             item
             for item in related_evidence
@@ -333,10 +315,6 @@ def run_evaluation():
             }
         ]
 
-        # ======================================
-        # CONFIDENCE
-        # ======================================
-
         confidence = calculate_confidence(
             supporting,
             contradicting
@@ -345,10 +323,6 @@ def run_evaluation():
         assessment = assess_confidence(
             confidence
         )
-
-        # ======================================
-        # OUTPUT
-        # ======================================
 
         print(
             f"CASE {index}"
@@ -393,6 +367,99 @@ def run_evaluation():
         )
 
         print()
+
+    # ==========================================
+    # CONTROLLED ML NON-MATCH
+    # ==========================================
+
+    print("======================================")
+    print("CONTROLLED ML NON-MATCH")
+    print("======================================")
+
+    epsilon = None
+    zeta = None
+
+    for entity in entities:
+
+        if entity.value == "epsilonFive":
+            epsilon = entity
+
+        if entity.value == "zetaSix":
+            zeta = entity
+
+    if epsilon is None or zeta is None:
+
+        print(
+            "Controlled pair not found."
+        )
+
+        return
+
+    epsilon_observations = get_actor_observations(
+        observations,
+        epsilon.entity_id
+    )
+
+    zeta_observations = get_actor_observations(
+        observations,
+        zeta.entity_id
+    )
+
+    if not epsilon_observations or not zeta_observations:
+
+        print(
+            "Controlled pair has insufficient observations."
+        )
+
+        return
+
+    epsilon_profile = convert_to_ml_profile(
+        epsilon_observations
+    )
+
+    zeta_profile = convert_to_ml_profile(
+        zeta_observations
+    )
+
+    non_match_comparison = compare_actor_profiles(
+        epsilon_profile,
+        zeta_profile
+    )
+
+    print()
+    print(
+        f"{epsilon.value} <-> {zeta.value}"
+    )
+
+    print(
+        f"Stylometry: "
+        f"{non_match_comparison['stylometric_similarity']:.4f}"
+    )
+
+    print(
+        f"Behavior: "
+        f"{non_match_comparison['behavioral_similarity']:.4f}"
+    )
+
+    print(
+        f"Overall ML: "
+        f"{non_match_comparison['overall_ml_similarity']:.4f}"
+    )
+
+    print(
+        f"Assessment: "
+        f"{non_match_comparison['overall_assessment']}"
+    )
+
+    print()
+
+    print(
+        "NOTE: This pair has no shared PGP relationship."
+    )
+
+    print(
+        "ML similarity is evaluated independently."
+    )
 
 
 if __name__ == "__main__":
